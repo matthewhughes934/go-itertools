@@ -1,0 +1,43 @@
+run:
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  revive:
+    rules:
+      - name: exported
+        disabled: true
+      - name: context-as-argument
+        disabled: false
+  nolintlint:
+    require-specific: true
+  errorlint:
+    errorf: false
+  goimports:
+    local-prefixes: github.com/matthewhughes934/go-itertools
+linters:
+  enable-all: true
+
+  disable:
+    # deprecated linters
+    - gomnd
+    - execinquery
+
+    # personal preference
+    - gocritic
+    - depguard
+    - funlen
+    - exhaustruct
+    - gochecknoglobals
+    - err113
+    - nlreturn
+    - paralleltest
+    - testpackage
+    - varnamelen
+    - wsl
+    # a bit annoying in tests https://github.com/Abirdcfly/dupword/issues/20
+    - dupword
+    # https://github.com/daixiang0/gci/issues/209
+    - gci
