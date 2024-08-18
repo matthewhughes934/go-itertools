@@ -37,15 +37,14 @@ func ExampleChain2() {
 	}
 
 	res := maps.Collect(itertools.Chain2(seqs...))
-	// sort since map iteration order is not deterministic
-	for _, k := range slices.Sorted(maps.Keys(res)) {
-		fmt.Println(k, res[k])
+	for k, v := range res {
+		fmt.Println(k, v)
 	}
 
-	// output:
+	// unordered output:
+	// foo 1
 	// bar 2
 	// baz 3
-	// foo 1
 	// wat 4
 }
 
@@ -78,14 +77,14 @@ func ExampleMap2() {
 		),
 	)
 
-	for _, k := range slices.Sorted(maps.Keys(res)) {
-		fmt.Println(k, res[k])
+	for k, v := range res {
+		fmt.Println(k, v)
 	}
 
-	// output:
+	// unordered output:
+	// foo halved 0.5
 	// bar halved 1
 	// baz halved 1.5
-	// foo halved 0.5
 }
 
 func ExampleFilter() {
@@ -117,11 +116,11 @@ func ExampleFilter2() {
 		),
 	)
 
-	for _, k := range slices.Sorted(maps.Keys(res)) {
-		fmt.Println(k, res[k])
+	for k, v := range res {
+		fmt.Println(k, v)
 	}
 
-	// output:
+	// unordered output:
 	// bar 2
 	// baz 4
 }
@@ -424,13 +423,13 @@ func ExampleCollectIntoMap() {
 
 	itertools.CollectIntoMap(itertools.Map2(mapper, maps.All(data)), dest)
 
-	for _, k := range slices.Sorted(maps.Keys(dest)) {
-		fmt.Println(k, dest[k])
+	for k, v := range dest {
+		fmt.Println(k, v)
 	}
 
-	// output:
-	// bar_new 4
+	// unordered output:
 	// foo_new 3
+	// bar_new 4
 }
 
 func ExampleCollectIntoMap_concatMaps() {
@@ -440,11 +439,11 @@ func ExampleCollectIntoMap_concatMaps() {
 
 	itertools.CollectIntoMap(itertools.Chain2(maps.All(map1), maps.All(map2)), dest)
 
-	for _, k := range slices.Sorted(maps.Keys(dest)) {
-		fmt.Println(k, dest[k])
+	for k, v := range dest {
+		fmt.Println(k, v)
 	}
 
-	// output:
+	// unordered output:
 	// A 1
 	// B 2
 	// C 3
