@@ -355,7 +355,7 @@ func Repeat[V any](value V, times int) iter.Seq[V] {
 	}
 }
 
-// Accumulate returns a [seq.Iter] that returns accumulated results from
+// Accumulate returns a [iter.Seq] that returns accumulated results from
 // function.
 // The function should accept two arguments, an accumulated total and a value
 // from the input sequence.
@@ -371,7 +371,7 @@ func Accumulate[V any](seq iter.Seq[V], function func(acc V, val V) V, initial V
 	}
 }
 
-// Compress returns a [iter.seq] that returns elements from seq where the corresponding
+// Compress returns a [iter.Seq] that returns elements from seq where the corresponding
 // element in selectors is true. Stops when either the data or selectors iterables have been exhausted.
 func Compress[V any](seq iter.Seq[V], selectors iter.Seq[bool]) iter.Seq[V] {
 	return func(yield func(V) bool) {
@@ -385,7 +385,7 @@ func Compress[V any](seq iter.Seq[V], selectors iter.Seq[bool]) iter.Seq[V] {
 	}
 }
 
-// Compress2 is like [Compress] but for [iter.Seq2]`.
+// Compress2 is like [Compress] but for [iter.Seq2].
 func Compress2[K comparable, V any](seq iter.Seq2[K, V], selectors iter.Seq[bool]) iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
 		seqNext, seqStop := iter.Pull2(seq)
@@ -433,7 +433,7 @@ func DropWhile[V any](seq iter.Seq[V], predicate func(V) bool) iter.Seq[V] {
 	}
 }
 
-// DropWhile2 is like [DropWhile] but for [seq.Iter2].
+// DropWhile2 is like [DropWhile] but for [iter.Seq2].
 func DropWhile2[K comparable, V any](
 	seq iter.Seq2[K, V],
 	predicate func(K, V) bool,
@@ -502,7 +502,7 @@ func CollectIntoMap[K comparable, V any](seq iter.Seq2[K, V], dest map[K]V) {
 	}
 }
 
-// IterCtx returns a [seq.Iter] that yields values from seq until either
+// IterCtx returns a [iter.Seq] that yields values from seq until either
 // seq is exhausted or ctx is cancelled, whichever comes first.
 func IterCtx[V any](ctx context.Context, seq iter.Seq[V]) iter.Seq[V] {
 	return func(yield func(V) bool) {
