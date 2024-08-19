@@ -260,13 +260,30 @@ func ZipLongest[V any](fillValue V, seqs ...iter.Seq[V]) iter.Seq[V] {
 
 // Range returns a [iter.Seq] that yields values step distance apart from start
 // until end, not including end.
+//
+// Range panics if step is 0.
 func Range(start int, end int, step int) iter.Seq[int] {
+	if step == 0 {
+		panic("step for Range must be non-zero")
+	}
 	return func(yield func(int) bool) {
-		for x := start; x < end; x += step {
+		length := getRangeLen(start, end, step)
+		for x := start; length > 0; x += step {
 			if !yield(x) {
 				return
 			}
+			length--
 		}
+	}
+}
+
+func getRangeLen(start int, end int, step int) int {
+	if step > 0 && start < end {
+		return 1 + (end-start-1)/step
+	} else if step < 0 && start > end {
+		return 1 + (start-end-1)/-step
+	} else {
+		return 0
 	}
 }
 
@@ -502,6 +519,28 @@ func CollectIntoMap[K comparable, V any](seq iter.Seq2[K, V], dest map[K]V) {
 	}
 }
 
+// Keys returns a [iter.Seq] over the keys of seq.
+func Keys[K comparable, V any](seq iter.Seq2[K, V]) iter.Seq[K] {
+	return func(yield func(K) bool) {
+		for k := range seq {
+			if !yield(k) {
+				return
+			}
+		}
+	}
+}
+
+// Values returns a [iter.Seq] over the values of seq.
+func Values[K comparable, V any](seq iter.Seq2[K, V]) iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for _, v := range seq {
+			if !yield(v) {
+				return
+			}
+		}
+	}
+}
+
 // IterCtx returns a [iter.Seq] that yields values from seq until either
 // seq is exhausted or ctx is cancelled, whichever comes first.
 func IterCtx[V any](ctx context.Context, seq iter.Seq[V]) iter.Seq[V] {
@@ -560,7 +599,12 @@ func IterCtx2[K comparable, V any](ctx context.Context, seq iter.Seq2[K, V]) ite
 
 // Slice returns a [iter.Seq] that slices up the provided sequence: returning
 // elements step distance apart from start until end (excluding end).
+//
+// Slice will panic if step is not a positive integer.
 func Slice[V any](seq iter.Seq[V], start int, end int, step int) iter.Seq[V] {
+	if step <= 0 {
+		panic("step for Slice must be a positive integer")
+	}
 	return func(yield func(V) bool) {
 		next, stop := iter.Pull(seq)
 		defer stop()
@@ -571,16 +615,14 @@ func Slice[V any](seq iter.Seq[V], start int, end int, step int) iter.Seq[V] {
 			}
 		}
 
-		i := start
-		for i < end {
+		for i := start; i < end; i++ {
 			v, ok := next()
-			if !ok || !yield(v) {
+			if !ok {
 				return
 			}
 
-			for range RangeUntil(step-1, 1) {
-				i += step
-				if _, ok := next(); !ok {
+			if (i-start)%step == 0 {
+				if !yield(v) {
 					return
 				}
 			}
@@ -596,12 +638,17 @@ func SliceUntil[V any](seq iter.Seq[V], end int, step int) iter.Seq[V] {
 }
 
 // Slice2 is like [Slice] but for [iter.Seq2].
+//
+// Like [Slice] it will panic if step is not a positive integer.
 func Slice2[K comparable, V any](
 	seq iter.Seq2[K, V],
 	start int,
 	end int,
 	step int,
 ) iter.Seq2[K, V] {
+	if step <= 0 {
+		panic("step for Slice2 must be a positive integer")
+	}
 	return func(yield func(K, V) bool) {
 		next, stop := iter.Pull2(seq)
 		defer stop()
@@ -612,16 +659,14 @@ func Slice2[K comparable, V any](
 			}
 		}
 
-		i := start
-		for i < end {
+		for i := start; i < end; i++ {
 			k, v, ok := next()
-			if !ok || !yield(k, v) {
+			if !ok {
 				return
 			}
 
-			for range RangeUntil(step-1, 1) {
-				i += step
-				if _, _, ok := next(); !ok {
+			if (i-start)%step == 0 {
+				if !yield(k, v) {
 					return
 				}
 			}
