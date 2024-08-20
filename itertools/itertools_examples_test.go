@@ -376,6 +376,22 @@ func ExampleAccumulate() {
 	// 15
 }
 
+func ExampleAccumulate_mixedTypes() {
+	seq := slices.Values([]int{1, 2, 3, 4, 5})
+	add := func(c complex64, x int) complex64 { return c + complex(float32(x), 1.0) }
+
+	for s := range itertools.Accumulate(seq, add, 0) {
+		fmt.Println(s)
+	}
+
+	// output:
+	// (1+1i)
+	// (3+2i)
+	// (6+3i)
+	// (10+4i)
+	// (15+5i)
+}
+
 func ExampleCompress() {
 	seq := slices.Values([]string{"A", "B", "C", "D", "E"})
 	selectors := slices.Values([]bool{true, true, false, true, false})

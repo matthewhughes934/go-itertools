@@ -376,9 +376,13 @@ func Repeat[V any](value V, times int) iter.Seq[V] {
 // function.
 // The function should accept two arguments, an accumulated total and a value
 // from the input sequence.
-func Accumulate[V any](seq iter.Seq[V], function func(acc V, val V) V, initial V) iter.Seq[V] {
+func Accumulate[V1 any, V2 any](
+	seq iter.Seq[V1],
+	function func(acc V2, val V1) V2,
+	initial V2,
+) iter.Seq[V2] {
 	current := initial
-	return func(yield func(V) bool) {
+	return func(yield func(V2) bool) {
 		for v := range seq {
 			current = function(current, v)
 			if !yield(current) {
