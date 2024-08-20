@@ -14,6 +14,14 @@ import (
 	"github.com/matthewhughes934/go-itertools/itertools"
 )
 
+func collectPairs[K comparable](seq iter.Seq2[K, K]) [][]K {
+	var res [][]K //nolint:prealloc
+	for k1, k2 := range seq {
+		res = append(res, []K{k1, k2})
+	}
+	return res
+}
+
 func TestSlice(t *testing.T) {
 	data := slices.Collect(itertools.RangeUntil(10, 1))
 
@@ -55,9 +63,9 @@ func TestSlice(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("%+v", tc), func(t *testing.T) {
-			iter := itertools.Slice(slices.Values(data), tc.start, tc.end, tc.step)
+			seq := itertools.Slice(slices.Values(data), tc.start, tc.end, tc.step)
 
-			got := slices.Collect(iter)
+			got := slices.Collect(seq)
 
 			require.Equal(t, tc.expected, got)
 		})
@@ -135,7 +143,7 @@ func TestSlice2(t *testing.T) {
 			10,
 			0,
 			1,
-			[][]int{},
+			nil,
 		},
 		{
 			0,
@@ -158,7 +166,7 @@ func TestSlice2(t *testing.T) {
 			dataLen + 1,
 			dataLen + 2,
 			1,
-			[][]int{},
+			nil,
 		},
 		{
 			dataLen - 1,
@@ -170,10 +178,7 @@ func TestSlice2(t *testing.T) {
 		t.Run(fmt.Sprintf("%+v", tc), func(t *testing.T) {
 			seq := itertools.Slice2(data, tc.start, tc.end, tc.step)
 
-			got := make([][]int, 0, len(tc.expected))
-			for n1, n2 := range seq {
-				got = append(got, []int{n1, n2})
-			}
+			got := collectPairs(seq)
 
 			require.Equal(t, tc.expected, got)
 		})
@@ -211,11 +216,6 @@ func TestSlice2_earlyStop(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	data := make([]int, 20)
-	for i := range len(data) {
-		data[i] = i
-	}
-
 	for _, tc := range []struct {
 		start    int
 		end      int
@@ -287,8 +287,8 @@ func TestMap_earlyStop(t *testing.T) {
 	takeLen := 3
 	expected := []string{"1", "2", "3"}
 
-	iter := itertools.Map(strconv.Itoa, slices.Values(slice))
-	got := slices.Collect(itertools.SliceUntil(iter, takeLen, 1))
+	seq := itertools.Map(strconv.Itoa, slices.Values(slice))
+	got := slices.Collect(itertools.SliceUntil(seq, takeLen, 1))
 
 	require.Equal(t, expected, got)
 }
@@ -297,22 +297,19 @@ func TestMap2_earlyStop(t *testing.T) {
 	inSeq := itertools.Enumerate(itertools.RangeUntil(5, 1), 1)
 	takeLen := 3
 	mapFunc := func(x1 int, x2 int) (int, int) { return x1 * 2, x2 * 2 }
-	expectedKeys := []int{2, 4, 6}
-	expectedVals := []int{0, 2, 4}
+	expected := [][]int{{2, 0}, {4, 2}, {6, 4}}
 
 	seq := itertools.Map2(mapFunc, inSeq)
 	shortSeq := itertools.SliceUntil2(seq, takeLen, 1)
-	gotKeys := slices.Collect(itertools.Keys(shortSeq))
-	gotVals := slices.Collect(itertools.Values(shortSeq))
+	got := collectPairs(shortSeq)
 
-	require.Equal(t, expectedKeys, gotKeys)
-	require.Equal(t, expectedVals, gotVals)
+	require.Equal(t, expected, got)
 }
 
 func testFilter[V any](t *testing.T, data []V, filterFunc func(V) bool, expected []V) {
 	t.Helper()
-	gotSeq := itertools.Filter(filterFunc, slices.Values(data))
-	got := slices.Collect(gotSeq)
+	seq := itertools.Filter(filterFunc, slices.Values(data))
+	got := slices.Collect(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -362,16 +359,13 @@ func TestFilter2_earlyStop(t *testing.T) {
 	inSeq := itertools.Enumerate(itertools.RangeUntil(5, 1), 1)
 	filterFunc := func(int, int) bool { return true }
 	takeLen := 3
-	expectedKeys := []int{1, 2, 3}
-	expectedVals := []int{0, 1, 2}
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.Filter2(filterFunc, inSeq)
 	shortSeq := itertools.SliceUntil2(seq, takeLen, 1)
-	gotKeys := slices.Collect(itertools.Keys(shortSeq))
-	gotVals := slices.Collect(itertools.Values(shortSeq))
+	got := collectPairs(shortSeq)
 
-	require.Equal(t, expectedKeys, gotKeys)
-	require.Equal(t, expectedVals, gotVals)
+	require.Equal(t, expected, got)
 }
 
 func TestKeys(t *testing.T) {
@@ -423,9 +417,9 @@ func TestEnumerate(t *testing.T) {
 	expectedIdx := []int{10, 11, 12, 13}
 	expectedVals := []string{"foo", "bar", "wat", "baz"}
 
-	iter := itertools.Enumerate(slices.Values(slice), 10)
-	gotIdx := slices.Collect(itertools.Keys(iter))
-	gotVals := slices.Collect(itertools.Values(iter))
+	seq := itertools.Enumerate(slices.Values(slice), 10)
+	gotIdx := slices.Collect(itertools.Keys(seq))
+	gotVals := slices.Collect(itertools.Values(seq))
 
 	require.Equal(t, expectedIdx, gotIdx)
 	require.Equal(t, expectedVals, gotVals)
@@ -438,9 +432,9 @@ func TestEnumerate_earlyStop(t *testing.T) {
 	expectedIdx := []int{5, 6, 7}
 	expectedVals := []int{0, 1, 2}
 
-	iter := itertools.SliceUntil2(itertools.Enumerate(inSeq, start), takeLen, 1)
-	gotIdx := slices.Collect(itertools.Keys(iter))
-	gotVals := slices.Collect(itertools.Values(iter))
+	seq := itertools.SliceUntil2(itertools.Enumerate(inSeq, start), takeLen, 1)
+	gotIdx := slices.Collect(itertools.Keys(seq))
+	gotVals := slices.Collect(itertools.Values(seq))
 
 	require.Equal(t, expectedIdx, gotIdx)
 	require.Equal(t, expectedVals, gotVals)
@@ -541,44 +535,36 @@ func TestChain2_earlyStop(t *testing.T) {
 	firstSeq := itertools.Enumerate(itertools.RangeUntil(5, 1), 1)
 	secondSeq := itertools.Enumerate(itertools.Range(5, 10, 1), 6)
 	takeLen := 6
-	expectedKeys := []int{1, 2, 3, 4, 5, 6}
-	expectedVals := []int{0, 1, 2, 3, 4, 5}
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}, {4, 3}, {5, 4}, {6, 5}}
 
 	seq := itertools.Chain2(firstSeq, secondSeq)
-	gotKeys := slices.Collect(itertools.Keys(itertools.SliceUntil2(seq, takeLen, 1)))
-	gotVals := slices.Collect(itertools.Values(itertools.SliceUntil2(seq, takeLen, 1)))
+	got := collectPairs(itertools.SliceUntil2(seq, takeLen, 1))
 
-	require.Equal(t, expectedKeys, gotKeys)
-	require.Equal(t, expectedVals, gotVals)
+	require.Equal(t, expected, got)
 }
 
 func TestZipPair_earlyStop(t *testing.T) {
 	firstSeq := itertools.RangeUntil(5, 1)
 	secondSeq := itertools.Range(5, 10, 1)
 	takeLen := 3
-	expectedKeys := []int{0, 1, 2}
-	expectedVals := []int{5, 6, 7}
+	expected := [][]int{{0, 5}, {1, 6}, {2, 7}}
 
 	t.Run("first sequence stopped", func(t *testing.T) {
 		firstSeqShort := itertools.SliceUntil(firstSeq, takeLen, 1)
 
 		seq := itertools.ZipPair(firstSeqShort, secondSeq)
-		gotKeys := slices.Collect(itertools.Keys(seq))
-		gotVals := slices.Collect(itertools.Values(seq))
+		got := collectPairs(seq)
 
-		require.Equal(t, expectedKeys, gotKeys)
-		require.Equal(t, expectedVals, gotVals)
+		require.Equal(t, expected, got)
 	})
 
 	t.Run("second sequence stopped", func(t *testing.T) {
 		secondSeqShort := itertools.SliceUntil(secondSeq, takeLen, 1)
 
 		seq := itertools.ZipPair(firstSeq, secondSeqShort)
-		gotKeys := slices.Collect(itertools.Keys(seq))
-		gotVals := slices.Collect(itertools.Values(seq))
+		got := collectPairs(seq)
 
-		require.Equal(t, expectedKeys, gotKeys)
-		require.Equal(t, expectedVals, gotVals)
+		require.Equal(t, expected, got)
 	})
 }
 
@@ -595,8 +581,8 @@ func TestZipLongest(t *testing.T) {
 		slices.Values(third),
 	}
 
-	iter := itertools.ZipLongest(fillValue, seqs...)
-	got := slices.Collect(iter)
+	seq := itertools.ZipLongest(fillValue, seqs...)
+	got := slices.Collect(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -647,10 +633,7 @@ func TestCycle2_earlyExit(t *testing.T) {
 	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.SliceUntil2(itertools.Cycle2(baseSeq), takeLen, 1)
-	got := make([][]int, 0, len(expected))
-	for k, v := range seq {
-		got = append(got, []int{k, v})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -712,10 +695,7 @@ func TestCompress2_earlyExit(t *testing.T) {
 	expected := [][]int{{1, 0}, {4, 3}, {5, 4}, {7, 6}, {8, 7}}
 
 	seq := itertools.SliceUntil2(itertools.Compress2(baseSeq, selectors), takeLen, 1)
-	got := make([][]int, 0, takeLen)
-	for x1, x2 := range seq {
-		got = append(got, []int{x1, x2})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -726,10 +706,7 @@ func TestCompress2_shortSelector(t *testing.T) {
 	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.Compress2(baseSeq, selectors)
-	got := make([][]int, 0, len(expected))
-	for x1, x2 := range seq {
-		got = append(got, []int{x1, x2})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -753,10 +730,7 @@ func TestDropWhile2_earlyExit(t *testing.T) {
 	expected := [][]int{{4, 5}, {5, 6}, {6, 7}}
 
 	seq := itertools.SliceUntil2(itertools.DropWhile2(baseSeq, predicate), takeLen, 1)
-	got := make([][]int, 0, len(expected))
-	for i, n := range seq {
-		got = append(got, []int{i, n})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -780,10 +754,7 @@ func TestTakeWhile2_earlyExit(t *testing.T) {
 	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.SliceUntil2(itertools.TakeWhile2(baseSeq, predicate), takeLen, 1)
-	got := make([][]int, 0, len(expected))
-	for i, n := range seq {
-		got = append(got, []int{i, n})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
@@ -799,7 +770,7 @@ func TestIterCtx_earlyExit(t *testing.T) {
 	require.Equal(t, expected, got)
 }
 
-func TestIterCtx_earlyExitInput(t *testing.T) {
+func TestIterCtx_inputExhausted(t *testing.T) {
 	baseSeq := itertools.RangeUntil(3, 1)
 	expected := []int{0, 1, 2}
 
@@ -815,23 +786,17 @@ func TestIterCtx2_earlyExit(t *testing.T) {
 	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.SliceUntil2(itertools.IterCtx2(context.Background(), baseSeq), takeLen, 1)
-	got := make([][]int, 0, len(expected))
-	for i, n := range seq {
-		got = append(got, []int{i, n})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
 
-func TestIterCtx2_earlyExitInput(t *testing.T) {
+func TestIterCtx2_inputExhausted(t *testing.T) {
 	baseSeq := itertools.Enumerate(itertools.RangeUntil(3, 1), 1)
 	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
 
 	seq := itertools.IterCtx2(context.Background(), baseSeq)
-	got := make([][]int, 0, len(expected))
-	for i, n := range seq {
-		got = append(got, []int{i, n})
-	}
+	got := collectPairs(seq)
 
 	require.Equal(t, expected, got)
 }
