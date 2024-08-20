@@ -1,6 +1,7 @@
 package itertools_test
 
 import (
+	"context"
 	"fmt"
 	"iter"
 	"maps"
@@ -625,6 +626,212 @@ func TestRangeFrom(t *testing.T) {
 	seq := itertools.RangeFrom(start, step)
 	shortSeq := itertools.SliceUntil(seq, takeLen, 1)
 	got := slices.Collect(shortSeq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestCycle_earlyExit(t *testing.T) {
+	baseSeq := itertools.RangeUntil(5, 1)
+	takeLen := 3
+	expected := []int{0, 1, 2}
+
+	seq := itertools.SliceUntil(itertools.Cycle(baseSeq), takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestCycle2_earlyExit(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(5, 1), 1)
+	takeLen := 3
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
+
+	seq := itertools.SliceUntil2(itertools.Cycle2(baseSeq), takeLen, 1)
+	got := make([][]int, 0, len(expected))
+	for k, v := range seq {
+		got = append(got, []int{k, v})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestRepeat_earlyExit(t *testing.T) {
+	baseSeq := itertools.Repeat("A", 100)
+	takeLen := 5
+	expected := []string{"A", "A", "A", "A", "A"}
+
+	seq := itertools.SliceUntil(baseSeq, takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestRepeat_infinite(t *testing.T) {
+	baseSeq := itertools.Repeat("A", -1)
+	takeLen := 5
+	expected := []string{"A", "A", "A", "A", "A"}
+
+	seq := itertools.SliceUntil(baseSeq, takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestAccumulate_earlyExit(t *testing.T) {
+	accumulator := func(x1 int, x2 int) int { return x1 * x2 }
+	baseSeq := itertools.Accumulate(itertools.Range(1, 10, 1), accumulator, 1)
+	takeLen := 5
+	expected := []int{1, 2, 6, 24, 120}
+
+	seq := itertools.SliceUntil(baseSeq, takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestCompress_earlyExit(t *testing.T) {
+	baseSeq := itertools.RangeUntil(10, 1)
+	selectors := slices.Values(
+		[]bool{true, false, false, true, true, false, true, true, false, true},
+	)
+	takeLen := 5
+	expected := []int{0, 3, 4, 6, 7}
+
+	seq := itertools.SliceUntil(itertools.Compress(baseSeq, selectors), takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestCompress2_earlyExit(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(10, 1), 1)
+	selectors := slices.Values(
+		[]bool{true, false, false, true, true, false, true, true, false, true},
+	)
+	takeLen := 5
+	expected := [][]int{{1, 0}, {4, 3}, {5, 4}, {7, 6}, {8, 7}}
+
+	seq := itertools.SliceUntil2(itertools.Compress2(baseSeq, selectors), takeLen, 1)
+	got := make([][]int, 0, takeLen)
+	for x1, x2 := range seq {
+		got = append(got, []int{x1, x2})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestCompress2_shortSelector(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(10, 1), 1)
+	selectors := slices.Values([]bool{true, true, true})
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
+
+	seq := itertools.Compress2(baseSeq, selectors)
+	got := make([][]int, 0, len(expected))
+	for x1, x2 := range seq {
+		got = append(got, []int{x1, x2})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestDropWhile_earlyExit(t *testing.T) {
+	baseSeq := itertools.RangeUntil(10, 1)
+	predicate := func(x int) bool { return x <= 3 }
+	takeLen := 3
+	expected := []int{4, 5, 6}
+
+	seq := itertools.SliceUntil(itertools.DropWhile(baseSeq, predicate), takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestDropWhile2_earlyExit(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.Range(1, 10, 1), 0)
+	predicate := func(i int, _ int) bool { return i <= 3 }
+	takeLen := 3
+	expected := [][]int{{4, 5}, {5, 6}, {6, 7}}
+
+	seq := itertools.SliceUntil2(itertools.DropWhile2(baseSeq, predicate), takeLen, 1)
+	got := make([][]int, 0, len(expected))
+	for i, n := range seq {
+		got = append(got, []int{i, n})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestTakeWhile_earlyExit(t *testing.T) {
+	baseSeq := itertools.RangeUntil(10, 1)
+	predicate := func(x int) bool { return x < 7 }
+	takeLen := 3
+	expected := []int{0, 1, 2}
+
+	seq := itertools.SliceUntil(itertools.TakeWhile(baseSeq, predicate), takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestTakeWhile2_earlyExit(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(10, 1), 1)
+	predicate := func(x int, _ int) bool { return x < 7 }
+	takeLen := 3
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
+
+	seq := itertools.SliceUntil2(itertools.TakeWhile2(baseSeq, predicate), takeLen, 1)
+	got := make([][]int, 0, len(expected))
+	for i, n := range seq {
+		got = append(got, []int{i, n})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestIterCtx_earlyExit(t *testing.T) {
+	baseSeq := itertools.RangeUntil(10, 1)
+	takeLen := 3
+	expected := []int{0, 1, 2}
+
+	seq := itertools.SliceUntil(itertools.IterCtx(context.Background(), baseSeq), takeLen, 1)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestIterCtx_earlyExitInput(t *testing.T) {
+	baseSeq := itertools.RangeUntil(3, 1)
+	expected := []int{0, 1, 2}
+
+	seq := itertools.IterCtx(context.Background(), baseSeq)
+	got := slices.Collect(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestIterCtx2_earlyExit(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(10, 1), 1)
+	takeLen := 3
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
+
+	seq := itertools.SliceUntil2(itertools.IterCtx2(context.Background(), baseSeq), takeLen, 1)
+	got := make([][]int, 0, len(expected))
+	for i, n := range seq {
+		got = append(got, []int{i, n})
+	}
+
+	require.Equal(t, expected, got)
+}
+
+func TestIterCtx2_earlyExitInput(t *testing.T) {
+	baseSeq := itertools.Enumerate(itertools.RangeUntil(3, 1), 1)
+	expected := [][]int{{1, 0}, {2, 1}, {3, 2}}
+
+	seq := itertools.IterCtx2(context.Background(), baseSeq)
+	got := make([][]int, 0, len(expected))
+	for i, n := range seq {
+		got = append(got, []int{i, n})
+	}
 
 	require.Equal(t, expected, got)
 }

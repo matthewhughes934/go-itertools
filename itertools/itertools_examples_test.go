@@ -6,7 +6,6 @@ import (
 	"iter"
 	"maps"
 	"slices"
-	"time"
 
 	"github.com/matthewhughes934/go-itertools/itertools"
 )
@@ -298,6 +297,26 @@ func ExampleCycle() {
 	// D
 }
 
+func ExampleCycle2() {
+	itemsSeq := itertools.Cycle2(
+		maps.All(map[string]int{"one": 1, "two": 2, "three": 3, "four": 4}),
+	)
+
+	for k, v := range itertools.SliceUntil2(itemsSeq, 8, 1) {
+		fmt.Println(k, v)
+	}
+
+	// unordered output:
+	// one 1
+	// two 2
+	// three 3
+	// four 4
+	// one 1
+	// two 2
+	// three 3
+	// four 4
+}
+
 func ExampleRepeat() {
 	res := itertools.Repeat("A", 7)
 
@@ -371,6 +390,20 @@ func ExampleCompress() {
 	// D
 }
 
+func ExampleCompress2() {
+	seq := slices.All([]int{1, 2, 3, 4, 5})
+	selectors := slices.Values([]bool{true, false, false, true, true})
+
+	for x1, x2 := range itertools.Compress2(seq, selectors) {
+		fmt.Println(x1, x2)
+	}
+
+	// output:
+	// 0 1
+	// 3 4
+	// 4 5
+}
+
 func ExampleDropWhile() {
 	seq := slices.Values([]int{1, 4, 6, 3, 8})
 	predicate := func(i int) bool { return i < 5 }
@@ -385,6 +418,19 @@ func ExampleDropWhile() {
 	// 8
 }
 
+func ExampleDropWhile2() {
+	seq := slices.All([]int{1, 4, 6, 11, 8})
+	predicate := func(i int, n int) bool { return n < 5 || i < 3 }
+
+	for i, n := range itertools.DropWhile2(seq, predicate) {
+		fmt.Println(i, n)
+	}
+
+	// output:
+	// 3 11
+	// 4 8
+}
+
 func ExampleTakeWhile() {
 	seq := slices.Values([]int{1, 4, 6, 3, 8})
 	predicate := func(i int) bool { return i < 5 }
@@ -396,6 +442,19 @@ func ExampleTakeWhile() {
 	// output:
 	// 1
 	// 4
+}
+
+func ExampleTakeWhile2() {
+	seq := slices.All([]int{1, 4, 6, 3, 8})
+	predicate := func(i int, n int) bool { return n < 5 && i <= 2 }
+
+	for i, n := range itertools.TakeWhile2(seq, predicate) {
+		fmt.Println(i, n)
+	}
+
+	// output:
+	// 0 1
+	// 1 4
 }
 
 func ExampleCollectIntoSlice() {
@@ -453,61 +512,45 @@ func ExampleCollectIntoMap_concatMaps() {
 }
 
 func ExampleIterCtx() {
-	tickIter := func(yield func(int) bool) {
-		ticker := time.NewTicker(time.Millisecond * 10)
-		defer ticker.Stop()
-
-		count := 1
-		for {
-			<-ticker.C
-			if !yield(count) {
-				return
-			}
-			count++
-		}
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*55)
+	seq := itertools.Repeat("iterating", -1)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	for c := range itertools.IterCtx(ctx, tickIter) {
+	count := 0
+	for c := range itertools.IterCtx(ctx, seq) {
+		if count == 5 {
+			cancel()
+		}
 		fmt.Println(c)
+		count++
 	}
 
 	// output:
-	// 1
-	// 2
-	// 3
-	// 4
-	// 5
+	// iterating
+	// iterating
+	// iterating
+	// iterating
+	// iterating
+	// iterating
 }
 
 func ExampleIterCtx2() {
-	tickIter := func(yield func(int) bool) {
-		ticker := time.NewTicker(time.Millisecond * 10)
-		defer ticker.Stop()
-
-		count := 1
-		for {
-			<-ticker.C
-			if !yield(count) {
-				return
-			}
-			count++
-		}
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*55)
+	seq := itertools.Enumerate(itertools.Repeat("iterating", -1), 1)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	for c := range itertools.IterCtx(ctx, tickIter) {
-		fmt.Println(c)
+	for i, c := range itertools.IterCtx2(ctx, seq) {
+		if i == 4 {
+			cancel()
+		}
+		fmt.Println(i, c)
 	}
 
 	// output:
-	// 1
-	// 2
-	// 3
-	// 4
-	// 5
+	// 1 iterating
+	// 2 iterating
+	// 3 iterating
+	// 4 iterating
 }
 
 func ExampleSlice() {
