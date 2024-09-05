@@ -8,6 +8,7 @@ package itertools
 import (
 	"context"
 	"iter"
+	"sync"
 )
 
 // Chain returns a [iter.Seq] that returns elements from the first sequence
@@ -551,12 +552,22 @@ func IterCtx[V any](ctx context.Context, seq iter.Seq[V]) iter.Seq[V] {
 	return func(yield func(V) bool) {
 		res := make(chan V)
 		next, stop := iter.Pull(seq)
-		defer stop()
+
+		// 'next' and 'stop' must not be called from multiple gorountines
+		// simultaneously
+		var pullMutex sync.Mutex
+		defer func() {
+			pullMutex.Lock()
+			defer pullMutex.Unlock()
+			stop()
+		}()
 
 		for {
 			var ok bool
 			var v V
 			go func() {
+				pullMutex.Lock()
+				defer pullMutex.Unlock()
 				v, ok = next()
 				res <- v
 			}()
@@ -578,13 +589,23 @@ func IterCtx2[K comparable, V any](ctx context.Context, seq iter.Seq2[K, V]) ite
 	return func(yield func(K, V) bool) {
 		res := make(chan seq2Store[K, V])
 		next, stop := iter.Pull2(seq)
-		defer stop()
+
+		// 'next' and 'stop' must not be called from multiple gorountines
+		// simultaneously
+		var pullMutex sync.Mutex
+		defer func() {
+			pullMutex.Lock()
+			defer pullMutex.Unlock()
+			stop()
+		}()
 
 		for {
 			var ok bool
 			var v V
 			var k K
 			go func() {
+				pullMutex.Lock()
+				defer pullMutex.Unlock()
 				k, v, ok = next()
 				res <- seq2Store[K, V]{k, v}
 			}()
