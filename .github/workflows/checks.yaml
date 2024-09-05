@@ -24,7 +24,7 @@ jobs:
         with:
           go-version: ${{ matrix.go_version }}
       - name: run tests
-        run: go test -coverprofile coverage.out ./...
+        run: go test -race -coverprofile coverage.out ./...
       - name: check coverage
         run: |
           go run gitlab.com/matthewhughes/go-cov/cmd/go-cov add-skips coverage.out > go-cov.out
