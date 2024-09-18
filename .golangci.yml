@@ -37,7 +37,5 @@ linters:
     - testpackage
     - varnamelen
     - wsl
-    # a bit annoying in tests https://github.com/Abirdcfly/dupword/issues/20
-    - dupword
     # https://github.com/daixiang0/gci/issues/209
     - gci

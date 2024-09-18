@@ -4,7 +4,7 @@ repos:
     hooks:
     -   id: format-markdown-docker
 -   repo: https://github.com/golangci/golangci-lint
-    rev: v1.60.2
+    rev: v1.61.0
     hooks:
     -   id: golangci-lint-full
         language_version: "1.23.0"
