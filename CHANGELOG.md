@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 - 2024-10-05
+
+### Added
+
+  - Add functions to return first matching elements
+
 ## 0.2.0 - 2024-09-05
 
 ### Fixed
