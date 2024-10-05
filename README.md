@@ -1,5 +1,8 @@
 # `go-itertools`
 
+[![Go
+Reference](https://pkg.go.dev/badge/github.com/matthewhughes934/go-itertools.svg)](https://pkg.go.dev/github.com/matthewhughes934/go-itertools)
+
 Library providing functions for working with Go 1.23 sequences and iterators.
 Inspired by some built-in Python functions like
 [`chain`](https://docs.python.org/3/library/functions.html#chain) and
