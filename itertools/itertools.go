@@ -127,6 +127,36 @@ func AnyFunc2[K comparable, V any](checker func(K, V) bool, seq iter.Seq2[K, V])
 	return false
 }
 
+// FirstFunc returns the first value in seq for which checker returns true and
+// 'true' or the zero value for type V and 'false' if no element of seq
+// satisfiers checker.
+func FirstFunc[V any](checker func(V) bool, seq iter.Seq[V]) (V, bool) { //nolint:ireturn
+	for v := range seq {
+		if checker(v) {
+			return v, true
+		}
+	}
+	var zero V
+	return zero, false
+}
+
+// FirstFunc2 returns the first pair of values in seq for which checker returns
+// true and 'true' or the zero values for types K and V and 'false' if no
+// element of seq satisfiers the checker.
+func FirstFunc2[K comparable, V any]( //nolint:ireturn
+	checker func(K, V) bool,
+	seq iter.Seq2[K, V],
+) (K, V, bool) {
+	for k, v := range seq {
+		if checker(k, v) {
+			return k, v, true
+		}
+	}
+	var zeroK K
+	var zeroV V
+	return zeroK, zeroV, false
+}
+
 // AllFunc returns true if checker returns true for all values in seq
 // otherwise it returns false.
 func AllFunc[V any](checker func(V) bool, seq iter.Seq[V]) bool {

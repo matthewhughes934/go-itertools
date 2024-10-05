@@ -189,6 +189,51 @@ func ExampleAnyFunc2() {
 	// true
 }
 
+func ExampleFirstFunc() {
+	nums := itertools.RangeUntil(5, 1)
+
+	x, found := itertools.FirstFunc(func(x int) bool { return x > 1 }, nums)
+	fmt.Println(x, found)
+
+	x, found = itertools.FirstFunc(func(x int) bool { return x > 10 }, nums)
+	fmt.Println(x, found)
+
+	// output:
+	// 2 true
+	// 0 false
+}
+
+func ExampleFirstFunc2() {
+	seq := itertools.ZipPair(
+		slices.Values([]string{"one", "two", "three", "four"}),
+		slices.Values([]int{1, 2, 3, 4}),
+	)
+
+	s, x, found := itertools.FirstFunc2(func(s string, _ int) bool { return s == "one" }, seq)
+	fmt.Println(s, x, found)
+
+	s, x, found = itertools.FirstFunc2(func(_ string, x int) bool { return x > 2 }, seq)
+	fmt.Println(s, x, found)
+
+	s, x, found = itertools.FirstFunc2(
+		func(s string, x int) bool { return s == "four" && x > 2 },
+		seq,
+	)
+	fmt.Println(s, x, found)
+
+	s, x, found = itertools.FirstFunc2(
+		func(s string, x int) bool { return s != "one" && x < 0 },
+		seq,
+	)
+	fmt.Println(s, x, found)
+
+	// output:
+	// one 1 true
+	// three 3 true
+	// four 4 true
+	//  0 false
+}
+
 func ExampleZip() {
 	seqs := []iter.Seq[int]{
 		slices.Values([]int{1, 2, 3}),
