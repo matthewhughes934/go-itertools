@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - 2024-10-28
+
+### Added
+
+  - Add `ChainSlices` as a convenience for `Chain`ing over slices
+  - Add `ChainMaps` as a convenience for `Chain`ing over maps
+
 ## 0.3.0 - 2024-10-05
 
 ### Added
