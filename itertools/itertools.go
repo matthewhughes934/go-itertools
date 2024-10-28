@@ -8,6 +8,7 @@ package itertools
 import (
 	"context"
 	"iter"
+	"maps"
 	"slices"
 	"sync"
 )
@@ -65,6 +66,15 @@ func Chain2[K comparable, V any](iters ...iter.Seq2[K, V]) iter.Seq2[K, V] {
 			}
 		}
 	}
+}
+
+// ChainMaps is like [Chain] but for maps.
+func ChainMaps[K comparable, V any](mps ...map[K]V) iter.Seq2[K, V] {
+	seqs := make([]iter.Seq2[K, V], 0, len(mps))
+	for _, mp := range mps {
+		seqs = append(seqs, maps.All(mp))
+	}
+	return Chain2(seqs...)
 }
 
 // Map returns a [iter.Seq] that applies mapFunc to every item of iterable,

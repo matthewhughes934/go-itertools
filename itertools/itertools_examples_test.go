@@ -66,6 +66,23 @@ func ExampleChain2() {
 	// wat 4
 }
 
+func ExampleChainMaps() {
+	map1 := map[string]int{"foo": 1, "bar": 2}
+	map2 := map[string]int{"baz": 3, "wat": 4}
+
+	res := itertools.ChainMaps(map1, map2)
+
+	for k, v := range res {
+		fmt.Println(k, v)
+	}
+
+	// unordered output:
+	// foo 1
+	// bar 2
+	// baz 3
+	// wat 4
+}
+
 func ExampleMap() {
 	seq := slices.Values([]int{1, 2, 3})
 
