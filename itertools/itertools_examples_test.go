@@ -54,7 +54,7 @@ func ExampleChain2() {
 		maps.All(map[string]int{"baz": 3, "wat": 4}),
 	}
 
-	res := maps.Collect(itertools.Chain2(seqs...))
+	res := itertools.Chain2(seqs...)
 	for k, v := range res {
 		fmt.Println(k, v)
 	}
@@ -103,13 +103,11 @@ func ExampleMap2() {
 		map[string]int{"foo": 1, "bar": 2, "baz": 3},
 	)
 
-	res := maps.Collect(
-		itertools.Map2(
-			func(k string, v int) (string, float64) {
-				return k + " halved", float64(v) / 2.0
-			},
-			seq,
-		),
+	res := itertools.Map2(
+		func(k string, v int) (string, float64) {
+			return k + " halved", float64(v) / 2.0
+		},
+		seq,
 	)
 
 	for k, v := range res {
@@ -142,13 +140,11 @@ func ExampleFilter2() {
 		map[string]int{"foo": 1, "bar": 2, "buz": 3, "baz": 4, "bux": 5},
 	)
 
-	res := maps.Collect(
-		itertools.Filter2(
-			func(k string, v int) bool {
-				return k[0] == 'b' && v%2 == 0
-			},
-			seq,
-		),
+	res := itertools.Filter2(
+		func(k string, v int) bool {
+			return k[0] == 'b' && v%2 == 0
+		},
+		seq,
 	)
 
 	for k, v := range res {
