@@ -29,6 +29,25 @@ func ExampleChain() {
 	// 6
 }
 
+func ExampleChainSlices() {
+	slice1 := []int{1, 2, 3}
+	slice2 := []int{11, 12, 13}
+
+	seq := itertools.ChainSlices(slice1, slice2)
+
+	for n := range seq {
+		fmt.Println(n)
+	}
+
+	// output:
+	// 1
+	// 2
+	// 3
+	// 11
+	// 12
+	// 13
+}
+
 func ExampleChain2() {
 	seqs := []iter.Seq2[string, int]{
 		maps.All(map[string]int{"foo": 1, "bar": 2}),
