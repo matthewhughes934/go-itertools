@@ -8,6 +8,7 @@ package itertools
 import (
 	"context"
 	"iter"
+	"slices"
 	"sync"
 )
 
@@ -24,6 +25,32 @@ func Chain[V any](seqs ...iter.Seq[V]) iter.Seq[V] {
 			}
 		}
 	}
+}
+
+// ChainSlices is a convenience method for calling [Chain] given slices.
+//
+// E.g instead of something like:
+//
+//	var res []V
+//	res = append(res, firstSlice...)
+//	res = append(res, secondSlie...)
+//	// more slices ...
+//
+//	for _, v := range res {
+//		// do stuff with v ...
+//	}
+//
+// You can call:
+//
+//	for v := range ChainSlices(firstSlice, secondSlice, /* more slices ... */) {
+//		// do stuff with v ...
+//	}
+func ChainSlices[V any](sls ...[]V) iter.Seq[V] {
+	seqs := make([]iter.Seq[V], 0, len(sls))
+	for _, slice := range sls {
+		seqs = append(seqs, slices.Values(slice))
+	}
+	return Chain(seqs...)
 }
 
 // Chain2 returns a [iter.Seq2] similar to [Chain], returning a [iter.Seq2]
