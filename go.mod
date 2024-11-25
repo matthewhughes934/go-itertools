@@ -3,7 +3,7 @@ module github.com/matthewhughes934/go-itertools
 go 1.23.0
 
 require (
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	gitlab.com/matthewhughes/go-cov v0.4.0
 	gitlab.com/matthewhughes/mages v0.2.0
 )
