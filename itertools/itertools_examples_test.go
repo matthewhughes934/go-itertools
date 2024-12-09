@@ -726,3 +726,31 @@ func ExampleRangeUntil() {
 	// 6
 	// 9
 }
+
+func ExampleFlatten() {
+	seq := maps.All(map[string]string{"hello": "world", "goodbye": "all"})
+
+	for n := range itertools.Flatten(seq) {
+		fmt.Println(n)
+	}
+
+	// unordered output:
+	// hello
+	// world
+	// goodbye
+	// all
+}
+
+func ExampleFlattenMap() {
+	m := map[string]string{"hello": "world", "goodbye": "all"}
+
+	for n := range itertools.FlattenMap(m) {
+		fmt.Println(n)
+	}
+
+	// unordered output:
+	// hello
+	// world
+	// goodbye
+	// all
+}
