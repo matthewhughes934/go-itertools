@@ -673,6 +673,20 @@ func ExampleSliceUntil() {
 	// E
 }
 
+func ExampleSliceFrom() {
+	seq := slices.Values([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+	for s := range itertools.SliceFrom(seq, 0, 3) {
+		fmt.Println(s)
+	}
+
+	// output:
+	// 1
+	// 4
+	// 7
+	// 10
+}
+
 func ExampleSlice2() {
 	seq := itertools.ZipPair(
 		slices.Values([]int{1, 2, 3, 4, 5}),
@@ -701,6 +715,24 @@ func ExampleSliceUntil2() {
 	// output:
 	// 1 11
 	// 3 13
+}
+
+func ExampleSliceFrom2() {
+	seq := itertools.ZipPair(
+		itertools.Range(0, 10, 1),
+		itertools.Range(1, 11, 1),
+	)
+
+	for x1, x2 := range itertools.SliceFrom2(seq, 0, 2) {
+		fmt.Println(x1, x2)
+	}
+
+	// output:
+	// 0 1
+	// 2 3
+	// 4 5
+	// 6 7
+	// 8 9
 }
 
 func ExampleRange() {

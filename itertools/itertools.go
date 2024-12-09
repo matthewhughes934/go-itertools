@@ -692,7 +692,8 @@ func IterCtx2[K comparable, V any](ctx context.Context, seq iter.Seq2[K, V]) ite
 // Slice returns a [iter.Seq] that slices up the provided sequence: returning
 // elements step distance apart from start until end (excluding end).
 //
-// Slice will panic if step is not a positive integer.
+// If 'end' is negative then the returned sequence will run until 'seq' is
+// exhausted. Slice will panic if step is not a positive integer.
 func Slice[V any](seq iter.Seq[V], start int, end int, step int) iter.Seq[V] {
 	if step <= 0 {
 		panic("step for Slice must be a positive integer")
@@ -707,7 +708,7 @@ func Slice[V any](seq iter.Seq[V], start int, end int, step int) iter.Seq[V] {
 			}
 		}
 
-		for i := start; i < end; i++ {
+		for i := start; end < 0 || i < end; i++ {
 			v, ok := next()
 			if !ok {
 				return
@@ -727,6 +728,13 @@ func Slice[V any](seq iter.Seq[V], start int, end int, step int) iter.Seq[V] {
 //	Slice(seq, 0, end, step)
 func SliceUntil[V any](seq iter.Seq[V], end int, step int) iter.Seq[V] {
 	return Slice(seq, 0, end, step)
+}
+
+// SliceFrom is equivalent to
+//
+//	Slice(seq, start, -1, end)
+func SliceFrom[V any](seq iter.Seq[V], start int, step int) iter.Seq[V] {
+	return Slice(seq, start, -1, step)
 }
 
 // Slice2 is like [Slice] but for [iter.Seq2].
@@ -751,7 +759,7 @@ func Slice2[K comparable, V any](
 			}
 		}
 
-		for i := start; i < end; i++ {
+		for i := start; end < 0 || i < end; i++ {
 			k, v, ok := next()
 			if !ok {
 				return
@@ -769,6 +777,11 @@ func Slice2[K comparable, V any](
 // SliceUntil2 is like [SliceUntil] but for [iter.Seq2].
 func SliceUntil2[K comparable, V any](seq iter.Seq2[K, V], end int, step int) iter.Seq2[K, V] {
 	return Slice2(seq, 0, end, step)
+}
+
+// SliceFrom2 is like [SliceFrom] but for [iter.Seq2].
+func SliceFrom2[K comparable, V any](seq iter.Seq2[K, V], start int, step int) iter.Seq2[K, V] {
+	return Slice2(seq, start, -1, step)
 }
 
 // Flatten returns a sequence that iterates across all keys and then all
