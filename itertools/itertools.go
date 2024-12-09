@@ -770,3 +770,14 @@ func Slice2[K comparable, V any](
 func SliceUntil2[K comparable, V any](seq iter.Seq2[K, V], end int, step int) iter.Seq2[K, V] {
 	return Slice2(seq, 0, end, step)
 }
+
+// Flatten returns a sequence that iterates across all keys and then all
+// values of seq.
+func Flatten[K comparable](seq iter.Seq2[K, K]) iter.Seq[K] {
+	return Zip(Keys(seq), Values(seq))
+}
+
+// FlattenMap is a convenience wrapper of [Flatten].
+func FlattenMap[K comparable](m map[K]K) iter.Seq[K] {
+	return Flatten(maps.All(m))
+}
