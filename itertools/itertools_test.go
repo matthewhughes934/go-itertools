@@ -800,3 +800,12 @@ func TestIterCtx2_inputExhausted(t *testing.T) {
 
 	require.Equal(t, expected, got)
 }
+
+func TestPairwise_emptyIfFewerThanTwo(t *testing.T) {
+	for _, vals := range [][]int{{}, {1}} {
+		t.Run(fmt.Sprintf("%d", len(vals)), func(t *testing.T) {
+			iter := itertools.Pairwise(slices.Values(vals))
+			require.Empty(t, maps.Collect(iter))
+		})
+	}
+}

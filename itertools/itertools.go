@@ -794,3 +794,25 @@ func Flatten[K comparable](seq iter.Seq2[K, K]) iter.Seq[K] {
 func FlattenMap[K comparable](m map[K]K) iter.Seq[K] {
 	return Flatten(maps.All(m))
 }
+
+// Pairwise returns successive overlapping pairs taken from the input sequence.
+// It will be empty if the input iterable has fewer than two values.
+func Pairwise[V comparable](seq iter.Seq[V]) iter.Seq2[V, V] {
+	return func(yield func(V, V) bool) {
+		next, stop := iter.Pull(seq)
+		defer stop()
+
+		prev, ok := next()
+		if !ok {
+			return
+		}
+
+		for {
+			next, ok := next()
+			if !ok || !yield(prev, next) {
+				return
+			}
+			prev = next
+		}
+	}
+}
