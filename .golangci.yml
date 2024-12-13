@@ -15,15 +15,20 @@ linters-settings:
     require-specific: true
   errorlint:
     errorf: false
-  goimports:
-    local-prefixes: github.com/matthewhughes934/go-itertools
+  gci:
+    sections:
+      - standard
+      - default
+      - localmodule
 linters:
   enable-all: true
 
   disable:
     # deprecated linters
-    - gomnd
-    - execinquery
+    - exportloopref
+
+    # conflicting/cover same issues
+    - forcetypeassert # covered by errcheck
 
     # personal preference
     - gocritic
@@ -37,5 +42,6 @@ linters:
     - testpackage
     - varnamelen
     - wsl
-    # https://github.com/daixiang0/gci/issues/209
-    - gci
+    # premature optimisation that creates inconsistent code (sometimes Sprintf, sometimes string concatenation)
+    # consider enabling _if_ you've profiled performance _and_ Sprintf calls are slowing you down
+    - perfsprint
