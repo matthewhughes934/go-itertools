@@ -786,3 +786,19 @@ func ExampleFlattenMap() {
 	// goodbye
 	// all
 }
+
+func ExamplePairwise() {
+	seq := slices.Values([]string{"A", "B", "C", "D", "E", "F", "G"})
+
+	for n, m := range itertools.Pairwise(seq) {
+		fmt.Println(n, m)
+	}
+
+	// output:
+	// A B
+	// B C
+	// C D
+	// D E
+	// E F
+	// F G
+}
