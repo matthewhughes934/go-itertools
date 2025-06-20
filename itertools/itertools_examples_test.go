@@ -1,13 +1,13 @@
 package itertools_test
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"iter"
 	"maps"
 	"math"
 	"slices"
+	"strings"
 
 	"github.com/matthewhughes934/go-itertools/itertools"
 )
@@ -824,16 +824,12 @@ func ExampleMax_withNaN() {
 }
 
 func ExampleMaxFunc() {
-	type f struct {
-		v int
-	}
-	seq := slices.Values([]f{{4}, {7}, {10}, {-1}})
-	maxFunc := func(x f, y f) int { return cmp.Compare(x.v, y.v) }
+	seq := slices.Values([]string{"bar", "foo", "abc"})
 
-	fmt.Printf("%+v\n", itertools.MaxFunc(seq, maxFunc))
+	fmt.Printf("%+v\n", itertools.MaxFunc(seq, strings.Compare))
 
 	// output:
-	// {v:10}
+	// foo
 }
 
 func ExampleMin() {
@@ -855,14 +851,10 @@ func ExampleMin_withNaN() {
 }
 
 func ExampleMinFunc() {
-	type f struct {
-		v int
-	}
-	seq := slices.Values([]f{{4}, {7}, {10}, {-1}})
-	maxFunc := func(x f, y f) int { return cmp.Compare(x.v, y.v) }
+	seq := slices.Values([]string{"foo", "bar", "abc"})
 
-	fmt.Printf("%+v\n", itertools.MinFunc(seq, maxFunc))
+	fmt.Printf("%+v\n", itertools.MinFunc(seq, strings.Compare))
 
 	// output:
-	// {v:-1}
+	// abc
 }
