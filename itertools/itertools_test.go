@@ -1,6 +1,7 @@
 package itertools_test
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"iter"
@@ -808,4 +809,53 @@ func TestPairwise_emptyIfFewerThanTwo(t *testing.T) {
 			require.Empty(t, maps.Collect(iter))
 		})
 	}
+}
+
+func TestMax(t *testing.T) {
+	seq := slices.Values([]int{4, 7, 11, -1})
+	expected := 11
+
+	got := itertools.Max(seq)
+
+	require.Equal(t, expected, got)
+}
+
+func TestMax_panicsOnEmptyIter(t *testing.T) {
+	seq := slices.Values([]int{})
+
+	require.PanicsWithValue(
+		t,
+		"itertools.Max: empty seq",
+		func() { itertools.Max(seq) },
+	)
+}
+
+func TestMaxFunc_panicsOnEmptyIter(t *testing.T) {
+	seq := slices.Values([]int{})
+
+	require.PanicsWithValue(
+		t,
+		"itertools.MaxFunc: empty seq",
+		func() { itertools.MaxFunc(seq, cmp.Compare) },
+	)
+}
+
+func TestMin_panicsOnEmptyIter(t *testing.T) {
+	seq := slices.Values([]int{})
+
+	require.PanicsWithValue(
+		t,
+		"itertools.Min: empty seq",
+		func() { itertools.Min(seq) },
+	)
+}
+
+func TestMinFunc_panicsOnEmptyIter(t *testing.T) {
+	seq := slices.Values([]int{})
+
+	require.PanicsWithValue(
+		t,
+		"itertools.MinFunc: empty seq",
+		func() { itertools.MinFunc(seq, cmp.Compare) },
+	)
 }
