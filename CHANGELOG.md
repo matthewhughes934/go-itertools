@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 - 2025-06-20
+
+### Added
+
+  - Add `Max`, `MaxFunc`, `Min`, and `MinFunc` to find the min or max values
+  - Add `Pairwise` to iterate pairwise over a sequence
+  - Add `SliceFrom` to slice from a position within the sequence
+  - Add `Flatten` and `Flatten` to iterate across keys then values of a
+    `iter.Seq2`
+
+### Changed
+
+  - `Slice` now accepts a negative number for 'end', meaning it will continue
+    until it exhausts the sequence
+
 ## 0.4.0 - 2024-10-28
 
 ### Added
