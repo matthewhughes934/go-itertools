@@ -6,6 +6,7 @@
 package itertools
 
 import (
+	"cmp"
 	"context"
 	"iter"
 	"maps"
@@ -87,6 +88,102 @@ func Map[V1 any, V2 any](mapFunc func(V1) V2, seq iter.Seq[V1]) iter.Seq[V2] {
 			}
 		}
 	}
+}
+
+// Max returns the maximal value in seq.
+// It panics if seq is empty.
+// For floating-point V, Max propagates NaNs
+// (any NaN value in seq forces the output to be NaN).
+func Max[V cmp.Ordered](seq iter.Seq[V]) V {
+	next, stop := iter.Pull(seq)
+	defer stop()
+	m, ok := next()
+	if !ok {
+		panic("itertools.Max: empty seq")
+	}
+	for {
+		v, ok := next()
+		if !ok {
+			break
+		}
+		m = max(m, v)
+	}
+
+	return m
+}
+
+// MaxFunc returns the maximal value in seq,
+// using cmp to compare elements.
+// It panics if seq is empty.
+// If there is more than one maximal element according to the cmp function,
+// MaxFunc returns the first one.
+// cmp should return values like [cmp.Compare].
+func MaxFunc[V any](seq iter.Seq[V], cmp func(a V, b V) int) V {
+	next, stop := iter.Pull(seq)
+	defer stop()
+	m, ok := next()
+	if !ok {
+		panic("itertools.MaxFunc: empty seq")
+	}
+	for {
+		v, ok := next()
+		if !ok {
+			break
+		}
+		if cmp(v, m) > 0 {
+			m = v
+		}
+	}
+
+	return m
+}
+
+// Min returns the minimal value in seq.
+// It panics if seq is empty.
+// For floating-point V, Min propagates NaNs
+// (any NaN value in seq forces the output to be NaN).
+func Min[V cmp.Ordered](seq iter.Seq[V]) V {
+	next, stop := iter.Pull(seq)
+	defer stop()
+	m, ok := next()
+	if !ok {
+		panic("itertools.Min: empty seq")
+	}
+	for {
+		v, ok := next()
+		if !ok {
+			break
+		}
+		m = min(m, v)
+	}
+
+	return m
+}
+
+// MinFunc returns the maximal value in seq,
+// using cmp to compare elements.
+// It panics if seq is empty.
+// If there is more than one maximal element according to the cmp function,
+// MinFunc returns the first one.
+// cmp should return values like [cmp.Compare].
+func MinFunc[V any](seq iter.Seq[V], cmp func(a V, b V) int) V {
+	next, stop := iter.Pull(seq)
+	defer stop()
+	m, ok := next()
+	if !ok {
+		panic("itertools.MinFunc: empty seq")
+	}
+	for {
+		v, ok := next()
+		if !ok {
+			break
+		}
+		if cmp(v, m) < 0 {
+			m = v
+		}
+	}
+
+	return m
 }
 
 // Map2 returns a [iter.Seq2] similar to [Map].
