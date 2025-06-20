@@ -26,6 +26,7 @@ linters:
     - forbidigo
     # magic numbers are too subjective for a simple linter
     - mnd
+    - ireturn
   settings:
     errcheck:
       check-type-assertions: true
